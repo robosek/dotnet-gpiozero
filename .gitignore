@@ -1,0 +1,6 @@
+packages
+paket-fiels
+bin
+obj
+.fake
+.vscode

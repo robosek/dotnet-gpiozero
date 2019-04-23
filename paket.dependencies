@@ -1,0 +1,14 @@
+source https://www.nuget.org/api/v2
+
+version 5.203.0
+
+nuget System.Device.Gpio 0.1.0-prerelease.19171.3 prerelease
+nuget Iot.Device.Bindings 0.1.0-prerelease.19171.3
+
+// [ FAKE GROUP ]
+group Build
+    storage none
+    source https://api.nuget.org/v3/index.json
+    nuget Fake.DotNet.Cli
+    nuget Fake.IO.FileSystem
+    nuget Fake.Core.Target
