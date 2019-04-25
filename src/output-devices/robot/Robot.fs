@@ -4,33 +4,38 @@ open System.Device.Gpio
 
 module RobotController =
 
-    let tryOpenMotorPins (pins : (NotCheckedPin * NotCheckedPin)) = 
-        let (pin1,pin2) = pins
-        let pinLeft = tryOpenPin pin1
-        let pinRight = tryOpenPwmPin pin2
-        
-        match pinLeft,pinRight with
-        | Ok pinLeft,Ok pinRight-> Ok(Motor(pinLeft,pinRight))
-        | _, Error e -> Error(e)
-        | Error e, _ -> Error(e)
-
     let private motorForward speed (Motor motor) =
-        let (pin1, pin2) = motor
+        let (pin1, pin2, pinPwm) = motor
 
         pin1 |> write PinValue.High
-        pin2 |> writePwm speed
+        pin2 |> write PinValue.Low
+        pinPwm |> writePwm speed
 
     let private motorBack speed (Motor motor) =
-        let (pin1, pin2) = motor
+        let (pin1, pin2, pinPwm) = motor
 
         pin1 |> write PinValue.Low
-        pin2 |> writePwm speed
+        pin2 |> write PinValue.High
+        pinPwm |> writePwm speed
     
     let private motorStop (Motor motor) =
-        let (pin1, pin2) = motor
+        let (pin1, pin2, pinPwm) = motor
 
         pin1 |> write PinValue.Low
-        pin2 |> writePwm 0.0
+        pin2 |> write PinValue.Low
+        pinPwm |> writePwm 0.0
+
+    let tryOpenMotorPins (pins : (NotCheckedPin * NotCheckedPin * NotCheckedPwmPin)) = 
+        let (pin1, pin2, pinPwm) = pins
+        let pinLeft = tryOpenPin pin1
+        let pinRight = tryOpenPin pin2
+        let pinPwm = tryOpenPwmPin pinPwm
+        
+        match pinLeft,pinRight, pinPwm with
+        | Ok pinLeft,Ok pinRight, Ok pinPwm-> Ok(Motor(pinLeft,pinRight, pinPwm))
+        | _,_, Error e -> Error(e)
+        | _,Error e,_ -> Error(e)
+        | Error e, _,_ -> Error(e)
 
     let forward speed (robot: Robot) = 
         robot.LeftMotor  |> motorForward speed

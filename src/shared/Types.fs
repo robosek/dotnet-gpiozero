@@ -1,5 +1,8 @@
 namespace DotnetGpiozero.Shared
 
-type NotCheckedPin = NotCheckedPin of int
-type OpenedPin = OpenedPin of int
-type OpenedPwmPin = OpenedPwmPin of int
+type Pin = int
+type Channel = int
+type NotCheckedPin = NotCheckedPin of Pin
+type NotCheckedPwmPin = NotCheckedPwmPin of (Pin * Channel)
+type OpenedPin = OpenedPin of Pin
+type OpenedPwmPin = OpenedPwmPin of (Pin * Channel)

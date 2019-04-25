@@ -7,8 +7,8 @@ open DotnetGpiozero.Led
 [<EntryPoint>]
 let main argv =
 
-    let leftMotorPins = NotCheckedPin(27),NotCheckedPin(22)
-    let rightMotorPins = NotCheckedPin(26),NotCheckedPin(17)
+    let leftMotorPins = NotCheckedPin(27), NotCheckedPin(22), NotCheckedPwmPin(12,0)
+    let rightMotorPins = NotCheckedPin(26), NotCheckedPin(17), NotCheckedPwmPin(18,1)
     let ledPin = NotCheckedPin(19)
 
     let resultLedPin = tryOpenPin ledPin
@@ -21,8 +21,9 @@ let main argv =
 
     let robot = match resultLeftMotor, resultRightMotor with
                 | Ok motorLeft, Ok motorRight -> Robot(motorLeft, motorRight)
+                | Error error1, Error error2 -> failwith(error1 + ", " + error2)
                 | _, Error e -> failwith(e)
-                | Error e, _ -> failwith(e)
+                | Error e, _ -> failwith(e) 
 
     LedController.on led
     robot |> RobotController.forward 0.5
