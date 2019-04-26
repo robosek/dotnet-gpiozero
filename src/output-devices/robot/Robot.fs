@@ -2,57 +2,53 @@ namespace DotnetGpiozero.Robot
 open DotnetGpiozero.Shared
 open System.Device.Gpio
 
-module RobotController =
+type RobotController(common: Common) =
 
-    let private motorForward speed (Motor motor) =
-        let (pin1, pin2, pinPwm) = motor
+    let motorForward speed (Motor motor) =
+        let (pin1, pinPwm) = motor
 
-        pin1 |> write PinValue.High
-        pin2 |> write PinValue.Low
-        pinPwm |> writePwm speed
+        pin1 |> common.Write PinValue.High
+        pinPwm |> common.WritePwm (1.0 - speed)
 
-    let private motorBack speed (Motor motor) =
-        let (pin1, pin2, pinPwm) = motor
+    let motorBack speed (Motor motor) =
+        let (pin1, pinPwm) = motor
 
-        pin1 |> write PinValue.Low
-        pin2 |> write PinValue.High
-        pinPwm |> writePwm speed
+        pin1 |> common.Write PinValue.Low
+        pinPwm |> common.WritePwm speed
     
-    let private motorStop (Motor motor) =
-        let (pin1, pin2, pinPwm) = motor
+    let motorStop (Motor motor) =
+        let (pin1, pinPwm) = motor
 
-        pin1 |> write PinValue.Low
-        pin2 |> write PinValue.Low
-        pinPwm |> writePwm 0.0
+        pin1 |> common.Write PinValue.Low
+        pinPwm |> common.WritePwm 0.0
 
-    let tryOpenMotorPins (pins : (NotCheckedPin * NotCheckedPin * NotCheckedPwmPin)) = 
-        let (pin1, pin2, pinPwm) = pins
-        let pinLeft = tryOpenPin pin1
-        let pinRight = tryOpenPin pin2
-        let pinPwm = tryOpenPwmPin pinPwm
+    member __.TryOpenMotorPins (pins : (NotCheckedPin *  NotCheckedPwmPin)) = 
+        let (pin1, pinPwm) = pins
+        let pinLeft = common.TryOpenPin pin1
+        let pinPwm = common.TryOpenPwmPin pinPwm
         
-        match pinLeft,pinRight, pinPwm with
-        | Ok pinLeft,Ok pinRight, Ok pinPwm-> Ok(Motor(pinLeft,pinRight, pinPwm))
-        | _,_, Error e -> Error(e)
-        | _,Error e,_ -> Error(e)
-        | Error e, _,_ -> Error(e)
+        match pinLeft,pinPwm with
+        | Ok pinLeft,Ok pinPwm-> Ok(Motor(pinLeft,pinPwm))
+        | _, Error e -> Error(e)
+        | Error e,_ -> Error(e)
+     
 
-    let forward speed (robot: Robot) = 
-        robot.LeftMotor  |> motorForward speed
+    member __.Forward speed (robot: Robot) = 
+        robot.LeftMotor  |> motorForward speed 
+        robot.RightMotor |> motorForward speed  
+
+    member __.Left speed (robot: Robot) = 
+        robot.LeftMotor |> motorForward 0.2
         robot.RightMotor |> motorForward speed
 
-    let left speed (robot: Robot) = 
-        robot.LeftMotor |> motorBack speed
-        robot.RightMotor |> motorForward speed
-
-    let right speed (robot: Robot)  = 
-        robot.LeftMotor |> motorForward speed
+    member __.Right speed (robot: Robot)  = 
+        robot.LeftMotor |> motorForward speed 
+        robot.RightMotor |> motorForward 0.2 
+    
+    member __.Backward speed (robot: Robot) =
+        robot.LeftMotor |> motorBack speed  
         robot.RightMotor |> motorBack speed
     
-    let backward speed (robot: Robot) =
-        robot.LeftMotor |> motorBack speed
-        robot.RightMotor |> motorBack speed
-    
-    let stop (robot: Robot) = 
+    member __.Stop (robot: Robot) = 
         robot.LeftMotor |> motorStop 
-        robot.RightMotor |> motorStop 
+        robot.RightMotor |> motorStop

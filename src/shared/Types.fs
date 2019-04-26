@@ -1,8 +1,11 @@
 namespace DotnetGpiozero.Shared
+open System.Device.Gpio
+open System.Device.Pwm
 
 type Pin = int
 type Channel = int
-type NotCheckedPin = NotCheckedPin of Pin
-type NotCheckedPwmPin = NotCheckedPwmPin of (Pin * Channel)
-type OpenedPin = OpenedPin of Pin
-type OpenedPwmPin = OpenedPwmPin of (Pin * Channel)
+type PwmPin = Pin * Channel
+type NotCheckedPin = NotCheckedPin of Pin * GpioController
+type NotCheckedPwmPin = NotCheckedPwmPin of PwmPin * PwmController
+type OpenedPin = OpenedPin of Pin * GpioController
+type OpenedPwmPin = OpenedPwmPin of PwmPin * PwmController
