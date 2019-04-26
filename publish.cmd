@@ -1,3 +1,3 @@
-SET ADDRESS= 192.168.1.1
+SET ADDRESS= 192.168.1.103
 
-fake.cmd run publish.fsx && echo - Entering publish folder... && cd sample/bin/Release/netcoreapp2.1/linux-arm/publish  && echo - Trying to send to files to raspberry pi && pscp -scp *.* "pi@%ADDRESS%":project/ && echo "Done"
+fake.cmd run publish.fsx && echo  - Trying to send files to raspberry pi && pscp -scp -r sample/bin/Release/netcoreapp2.1/linux-arm/publish "pi@%ADDRESS%":Desktop/ && echo Success
