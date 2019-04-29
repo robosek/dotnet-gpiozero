@@ -5,13 +5,14 @@ open System.Device.Gpio
 module Common =
 
     [<Literal>]
-    let SoftPwmFrequencyHz = 50.0
+    let SoftPwmFrequencyHz = 100.0
 
     let write pinValue (OpenedPin (pin, gpioController)) =
         gpioController.Write(pin, pinValue )
     
     let writePwm pinValue (OpenedPwmPin (pwmPin, pwmController)) =
-        pwmController.ChangeDutyCycle(pwmPin, 0, pinValue * 100.0)
+        let (pin, channel) = pwmPin
+        pwmController.ChangeDutyCycle(pin, channel, pinValue * 100.0)
 
     let tryOpenPin (NotCheckedPin (pin, gpioController)) : Result<OpenedPin, string> =
         try
@@ -26,8 +27,9 @@ module Common =
 
     let tryOpenPwmPin (NotCheckedPwmPin (pinPwm, pwmController)) : Result<OpenedPwmPin, string> =
         try
-           pwmController.OpenChannel(pinPwm, 0)
-           pwmController.StartWriting(pinPwm, 0, SoftPwmFrequencyHz, 100.0)
+           let (pin, channel) = pinPwm
+           pwmController.OpenChannel(pin, channel)
+           pwmController.StartWriting(pin, channel, SoftPwmFrequencyHz, 100.0)
            Ok(OpenedPwmPin(pinPwm, pwmController))
         with
         | ex -> Error ex.Message
@@ -39,10 +41,11 @@ module Common =
         with
         | ex -> Error ex.Message
 
-    let tryClosePwmPin (OpenedPwmPin (pin, pwmController)) : Result<Unit,string> =
+    let tryClosePwmPin (OpenedPwmPin (pwmPin, pwmController)) : Result<Unit,string> =
         try
-            pwmController.CloseChannel(pin, 0)
-            Ok(pwmController.Dispose())
+           let (pin, channel) = pwmPin
+           pwmController.CloseChannel(pin, channel)
+           Ok(pwmController.Dispose())
         with
         | ex -> Error ex.Message
     
