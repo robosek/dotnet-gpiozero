@@ -1,14 +1,11 @@
 namespace DotnetGpiozero.Buzzer
 open DotnetGpiozero.Shared
 
-type Buzzer(pin: OpenedPin) = 
-    member __.OpenedPin = pin
-
-type BuzzerState = 
-    On | Off | Beep
+type Buzzer(pin: OpenedPwmPin) = 
+    member __.OpenedPwmPin = pin
 
 type BuzzerBlinkEventHandler = 
     {
-        BlinkTask: Async<Unit>
-        StopBlinking: Unit -> Unit
+        BeepTask: Async<Unit>
+        StopBeeping: Unit -> Unit
     }
