@@ -7,12 +7,22 @@ module Common =
     [<Literal>]
     let SoftPwmFrequencyHz = 100.0
 
+    [<Literal>]
+    let HardwarePwmFrequencyHz = 100.0
+
     let write pinValue (OpenedPin (pin, gpioController)) =
         gpioController.Write(pin, pinValue )
     
     let writePwm pinValue (OpenedPwmPin (pwmPin, pwmController)) =
-        let (pin, channel) = pwmPin
+        let pin, channel = match pwmPin with
+                            | SoftPwmPin pin -> (pin, 0)
+                            | HardwarePwmPin (pin, channel) -> (pin, channel)
         pwmController.ChangeDutyCycle(pin, channel, pinValue * 100.0)
+    
+    let stopWritingPwm (OpenedPwmPin (pwmPin, pwmController)) =
+        match pwmPin with
+        | SoftPwmPin pin -> pwmController.StopWriting(pin, 0)
+        | HardwarePwmPin (pin,channel) -> pwmController.StopWriting(pin, channel)
 
     let tryOpenPin (NotCheckedPin (pin, gpioController)) : Result<OpenedPin, string> =
         try
@@ -27,9 +37,11 @@ module Common =
 
     let tryOpenPwmPin (NotCheckedPwmPin (pinPwm, pwmController)) : Result<OpenedPwmPin, string> =
         try
-           let (pin, channel) = pinPwm
-           pwmController.OpenChannel(pin, channel)
-           pwmController.StartWriting(pin, channel, SoftPwmFrequencyHz, 100.0)
+           match pinPwm with
+           | SoftPwmPin pin -> pwmController.OpenChannel(pin, 0)
+                               pwmController.StartWriting(pin, 0, SoftPwmFrequencyHz, 0.0)
+           | HardwarePwmPin (pin, channel) -> pwmController.OpenChannel(pin, channel)
+                                              pwmController.StartWriting(pin, channel, HardwarePwmFrequencyHz, 0.0)
            Ok(OpenedPwmPin(pinPwm, pwmController))
         with
         | ex -> Error ex.Message
@@ -43,7 +55,9 @@ module Common =
 
     let tryClosePwmPin (OpenedPwmPin (pwmPin, pwmController)) : Result<Unit,string> =
         try
-           let (pin, channel) = pwmPin
+           let pin, channel = match pwmPin with
+                                | SoftPwmPin pin -> (pin, 0)
+                                | HardwarePwmPin (pin, channel) -> (pin, channel)
            pwmController.CloseChannel(pin, channel)
            Ok(pwmController.Dispose())
         with
