@@ -10,6 +10,9 @@
     <ProjectReference Include="..\src\output-devices\robot\robot.fsproj">
       <Name>robot.fsproj</Name>
     </ProjectReference>
+    <ProjectReference Include="..\src\output-devices\buzzer\buzzer.fsproj">
+      <Name>buzzer.fsproj</Name>
+    </ProjectReference>
     <ProjectReference Include="..\src\shared\shared.fsproj">
       <Name>shared.fsproj</Name>
     </ProjectReference>
